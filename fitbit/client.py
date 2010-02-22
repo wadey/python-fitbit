@@ -1,6 +1,5 @@
 import xml.etree.ElementTree as ET
 import datetime
-import time
 import urllib, urllib2
 import logging
 
@@ -65,8 +64,7 @@ class Client(object):
             dataVersion=2108,
             chart_Type="column2d",
             period="1d",
-            dateTo=str(date),
-            #ts=int(time.time() * 1000)
+            dateTo=str(date)
         )
 
         xml = self._request("/graph/getGraphData", p)
