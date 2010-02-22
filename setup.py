@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(name="fitbit",
       version="0.1",
-      description="Library for dumping data from www.fitbit.com",
+      description="Library for grabbing data from www.fitbit.com",
       author="Wade Simmons",
       author_email="wade@wades.im",
       url="http://github.com/wadey/python-fitbit",

@@ -6,7 +6,7 @@ import logging
 _log = logging.getLogger("fitbit")
 
 class Client(object):
-    """A simple data dump client for the www.fitbit.com website.
+    """A simple API client for the www.fitbit.com website.
     see README for more details
     """
     

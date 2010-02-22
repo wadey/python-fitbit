@@ -1,6 +1,7 @@
 # Overview
 
 This client provides a simple way to dump data from www.fitbit.com.
+I love my fitbit and I want to be able to use the raw data to make my own graphs.
 Currently, this client uses the endpoints used by the flash graphs.
 Once the official API is announced, this client will be updated to use it.
 
