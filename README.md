@@ -22,10 +22,28 @@ Create a `fitbit.Client` with this data, plus the userId (which you can find at 
 
     # data will be a list of tuples. example:
     # [
-    #   (datetime.datetime(2010, 2, 21, 0, 0), 0.0),
-    #   (datetime.datetime(2010, 2, 21, 0, 5), 40.0),
+    #   (datetime.datetime(2010, 2, 21, 0, 0), 0),
+    #   (datetime.datetime(2010, 2, 21, 0, 5), 40),
     #   ....
-    #   (datetime.datetime(2010, 2, 21, 23, 55), 64.0),
+    #   (datetime.datetime(2010, 2, 21, 23, 55), 64),
     # ]
     
     # The timestamp is the beginning of the 5 minute range the value is for
+    
+    # Sleep data is a little different:
+    data = client.intraday_sleep(datetime.date(2010, 2, 21))
+    
+    # data will be a similar list of tuples, but spaced one minute apart
+    # [
+    #   (datetime.datetime(2010, 2, 20, 23, 59), 2),
+    #   (datetime.datetime(2010, 2, 21, 0, 0), 1),
+    #   (datetime.datetime(2010, 2, 21, 0, 1), 1),
+    #   ....
+    #   (datetime.datetime(2010, 2, 21, 8, 34), 1),
+    # ]
+    
+    # The different values for sleep are:
+    #   0: no sleep data
+    #   1: asleep
+    #   2: awake
+    #   3: very awake
