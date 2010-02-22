@@ -1,3 +1,3 @@
-from client import Client
+from fitbit.client import Client
 
 __all__ = ["Client"]
