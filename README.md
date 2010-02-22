@@ -31,6 +31,10 @@ Create a `fitbit.Client` with this data, plus the userId (which you can find at 
     
     # The timestamp is the beginning of the 5 minute range the value is for
     
+    # Other API calls:
+    data = client.intraday_calories_burned(datetime.date(2010, 2, 21))
+    data = client.intraday_active_score(datetime.date(2010, 2, 21))
+    
     # Sleep data is a little different:
     data = client.intraday_sleep(datetime.date(2010, 2, 21))
     
