@@ -56,7 +56,7 @@ class Client(object):
         query_str = urllib.urlencode(parameters)
 
         request = urllib2.Request("%s%s?%s" % (self.url_base, path, query_str), headers={"Cookie": self._request_cookie})
-        _log.debug("requesting: %s" % request.get_full_url())
+        _log.debug("requesting: %s", request.get_full_url())
 
         data = None
         try:
@@ -67,7 +67,7 @@ class Client(object):
             data = httperror.read()
             httperror.close()
 
-        #_log.debug("response: %s" % data)
+        #_log.debug("response: %s", data)
 
         return ET.fromstring(data.strip())
 
