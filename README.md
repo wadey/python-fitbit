@@ -1,6 +1,8 @@
 # Overview
 
-This client provides a simple way to dump fitbit data from www.fitbit.com until the official API is available
+This client provides a simple way to dump data from www.fitbit.com.
+Currently, this client uses the endpoints used by the flash graphs.
+Once the official API is announced, this client will be updated to use it.
 
 Right now, you need to log in to the site with your username / password, and then grab some information from the cookie.
 The cookie will look like:

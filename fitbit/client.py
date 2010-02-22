@@ -7,8 +7,7 @@ _log = logging.getLogger("fitbit")
 
 class Client(object):
     """A simple data dump client for the www.fitbit.com website.
-    Uses the internal API used for the flash charts,
-    which will probably stop working at some point
+    see README for more details
     """
     
     def __init__(self, user_id, sid, uid, uis, url_base="http://www.fitbit.com"):
