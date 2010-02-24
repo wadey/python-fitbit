@@ -52,3 +52,5 @@ Create a `fitbit.Client` with this data, plus the userId (which you can find at 
     #   1: asleep
     #   2: awake
     #   3: very awake
+
+There is also an example dump script provided: `examples/dump.py`.  This script can be set up as a cron job to dump data nightly.
