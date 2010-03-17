@@ -1,86 +1,87 @@
 #!/usr/bin/env python
 """
-This is an example script to dump the fitbit data for the previous day.
+This is an example script to dump the fitbit data for the previous day into a sqlite database.
 This can be set up in a cronjob to dump data daily.
 
 Create a config file at ~/.fitbit.conf with the following:
 
 [fitbit]
-user_id: 12XXX 
+user_id: 12XXX
 sid: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
 uid: 123456
 uis: XXX%3D
 dump_dir: ~/Dropbox/fitbit
-db_file: ~/data/nameofdbfile.sqlite3
+db_file: ~/data/nameofdbfile.sqlite
+
+The database has a table for each of steps, calories, active_score, and sleep. There is also a table with extension _daily for each that contains accumulated data per day.
+
+The timestamp in the table is a unix timestamp. Tables are set up so that the script can be run repeatedly for the same day. Newer data replaces older data for the same timestamp. This is so data can be caught up if the fitbit does not sync every day.
 """
-import time
-import os
+
+from time import mktime, sleep
+from datetime import datetime, timedelta
+from os import path
 import ConfigParser
 import sqlite3
 
 import fitbit
 
 CONFIG = ConfigParser.ConfigParser()
-CONFIG.read(["fitbit.conf", os.path.expanduser("~/.fitbit.conf")])
+CONFIG.read(["fitbit.conf", path.expanduser("~/.fitbit.conf")])
 
-DUMP_DIR = os.path.expanduser(CONFIG.get('fitbit', 'dump_dir'))
-DB_FILE = os.path.expanduser(CONFIG.get('fitbit', 'db_file'))
+DB_FILE = path.expanduser(CONFIG.get('fitbit', 'db_file'))
 
 def client():
-    return fitbit.Client(CONFIG.get('fitbit', 'user_id'), CONFIG.get('fitbit', 'sid'), CONFIG.get('fitbit', 'uid'), CONFIG.get('fitbit', 'uis'))
-
-def dump_to_str(data):
-    return "\n".join(["%s,%s" % (str(ts), v) for ts, v in data])
-
-def dump_to_file(data_type, date, data):
-    directory = "%s/%s" % (DUMP_DIR, data_type)
-    if not os.path.isdir(directory):
-        os.makedirs(directory)
-    with open("%s/%s.csv" % (directory, str(date)), "w") as f:
-        f.write(dump_to_str(data))
-
-# From http://code.activestate.com/recipes/117215/
-def toJulian(dateString):
-	"""Returns the Julian day number of a date."""
-	d = datetime.strptime(dateString, "%Y-%m-%d")
-	a = (14 - d.month)//12
-	y = d.year + 4800 - a
-	m = d.month + 12*a - 3
-	return d.day + ((153*m + 2)//5) + 365*y + y//4 - y//100 + y//400 - 32045
+	return fitbit.Client(CONFIG.get('fitbit', 'user_id'), CONFIG.get('fitbit', 'sid'), CONFIG.get('fitbit', 'uid'), CONFIG.get('fitbit', 'uis'))
 
 def create_table(table, db):
-    db.execute("create table %s (date text, time text, %s integer)" % (table, table))
-    db.execute("create table %s_daily (date text, time text, %s integer)" % (table, table))
+	db.execute("create table %s (datetime integer PRIMARY KEY ON CONFLICT REPLACE, %s integer)" % (table, table))
+	db.execute("create table %s_daily (date integer PRIMARY KEY ON CONFLICT REPLACE, %s integer)" % (table, table))
 
 """ Connects to the DB, creates it if it doesn't exist. Returns the connection.
 """
 def connect_db(filename):
-    if os.path.isfile(filename):
-        return sqlite3.connect(filename)
-    else:
-        db = sqlite3.connect(filename)
-        create_table("steps", db)
-        create_table("calories", db)
-        create_table("active_score", db)
-        create_table("sleep", db)
+	if path.isfile(filename):
+		return sqlite3.connect(filename)
+	else:
+		db = sqlite3.connect(filename)
+		create_table("steps", db)
+		create_table("calories", db)
+		create_table("active_score", db)
+		create_table("sleep", db)
+		return db
 
-def dump_to_db(data_type, date, data):
-    
+def dump_to_db(db, data_type, date, data):
+	insertString = "insert into %s values (?, ?)" % data_type
+	sum = 0
+	for row in data:
+		db.execute(insertString, (mktime(row[0].timetuple()), row[1]))
+		sum += row[1]
+	db.execute("insert into %s_daily values (?, ?)" % data_type, (mktime(date.timetuple()), sum))
+	db.commit()
 
-def dump_day(date):
-    c = client()
+def dump_day(db, date):
+	c = client()
 
-    dump_to_file("steps", date, c.intraday_steps(date))
-    time.sleep(1)    
-    dump_to_file("calories", date, c.intraday_calories_burned(date))
-    time.sleep(1)
-    dump_to_file("active_score", date, c.intraday_active_score(date))
-    time.sleep(1)
-    dump_to_file("sleep", date, c.intraday_sleep(date))
-    time.sleep(1)
+	dump_to_db(db, "steps", date, c.intraday_steps(date))
+	sleep(1)
+	dump_to_db(db, "calories", date, c.intraday_calories_burned(date))
+	sleep(1)
+	dump_to_db(db, "active_score", date, c.intraday_active_score(date))
+	sleep(1)
+	dump_to_db(db, "sleep", date, c.intraday_sleep(date))
+	sleep(1)
 
 if __name__ == '__main__':
-    #import logging
-    #logging.basicConfig(level=logging.DEBUG)
-    import datetime
-    dump_day((datetime.datetime.now().date() - datetime.timedelta(days=1)))
+	db = connect_db(DB_FILE)
+
+	#oneday = timedelta(days=1)
+	#day = datetime(2009, 10, 18).date()
+	#while day < datetime.now().date():
+	#	print day
+	#	dump_day(db, day)
+	#	day += oneday
+
+	dump_day(db, (datetime.now().date() - timedelta(days=1)))
+
+	db.close()
